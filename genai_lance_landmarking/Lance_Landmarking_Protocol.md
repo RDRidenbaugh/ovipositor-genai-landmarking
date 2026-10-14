@@ -312,7 +312,7 @@ For each view: a separate generalized Procrustes analysis with sliding semilandm
 | Tip / cutting geometry | Long–short apex offset along the axis (B01 vs B02, the length asymmetry between halves); fork depth (B14 to the apex midpoint); inner angle (B01–B14–B02) | Bottom |
 | Segmentation (meristic) | Suture count per half; suture spacing profile (inter-suture distance / blade length); suture inclination (angle from ventral end to dorsal end) | Suture detector + anchors |
 | Window | Window length; dorsal suture-end spacing. Scallop amplitude is not measured: the window semilandmarks are not at the crests | Window anchors |
-| Blade height | Distal blade area (R18 → apex, bounded by the dorsal curve, the ventral margin and the cut line R18–R11) and mean height = area / length along the axis; window-start height R11–R18; cut-line height (R18 through R11 to the ventral margin); blade height from suture 1, R04–R18 (oblique) | Curves as boundaries + anchors |
+| Blade height | Distal blade area (R18 → apex, bounded by the dorsal curve, the ventral margin and the cut line R18–R11) and mean height = area / length along the axis; blade height from suture 1, R04–R18 (oblique) | Curves as boundaries + anchors |
 
 Recommended handling:
 - Map size and shape separately. Also map shape with log centroid size as a covariate (allometry-corrected), because a size QTL will otherwise show up as a shape QTL.
