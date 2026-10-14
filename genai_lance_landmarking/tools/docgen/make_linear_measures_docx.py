@@ -143,6 +143,7 @@ def lateral_figures(view):
     ring = blade_ring(q(f"{s}18"), q(f"{s}11"), ventral_chain, dorsal_chain)
     f.poly(np.vstack([ring, ring[:1]]), C[1], "Distal_blade_area", label_at=0.55, label_dy=-50)
     f.line(q(f"{s}18"), ring[0], (120, 120, 120), "cut line R18-R11", dashed=True, label_t=1.0, label_dx=-120, label_dy=10)
+    f.line(q(f"{s}04"), q(f"{s}18"), C[3], "Blade_height_sut1", label_t=0.2, label_dx=-250 if right else 14, label_dy=-10)
     f.line(q(f"{s}11"), q(f"{s}18"), C[0], "Height_window_start", label_dx=-260)
     if not right:
         f.line(P[9 - 1], P[10 - 1], C[7], "Sut6_to_split", label_dy=24)
@@ -294,6 +295,7 @@ doc.add_heading("Height of the distal blade", level=2)
 picture(FIGDIR / "lance_right_fig4_area.jpg", "Figure 5. Right view: the distal blade (outlined), bounded by the cut line through R18 and R11, the ventral margin and the dorsal curve.")
 table(H, [
     ["Height_window_start", "R11 (11)–R18 (18)", "Window's proximal end to the dorsal edge (perpendicular to the axis by construction of R18)."],
+    ["Blade_height_sut1", "R04 (4)–R18 (18)", "Suture 1's ventral end to the start of the dorsal curve, a straight line between two protocol points. R04 lies proximal to the cut line, so the line is oblique to the lance axis (not a perpendicular height)."],
     ["Distal_blade_area", "R18, 29–38, R01, ventral margin back to the cut line", "Area (mm²) of the blade distal to the cut line R18 → R11, which is perpendicular to the lance axis and is continued to the ventral margin. Bounded by the dorsal curve, the ventral margin (R04–R10, 25–28) and the cut line."],
     ["Mean_height", "Distal_blade_area / (R18 → R01 along the axis)", "Mean height of the distal blade, including the tapering tip: its area divided by its length measured along the lance axis. It replaces the v1.4 point heights (Height_sutk, Band_height_sutk), which correlated 0.96–0.99 with it."],
 ])
