@@ -307,7 +307,7 @@ doc.add_heading("Left view (short half)", level=1)
 picture(FIGDIR / "lance_left_fig1_key.jpg", "Figure 6. Left view: the 40 points.")
 para("Every Right-view measure is also computed for the Left view with the same definition, suffix _left, and L in place of R. The differences follow from the Left view's points:")
 for t_ in [
-    "L10 (10) is the ventral split point, where the short half separates, not a seventh suture. So there are only Arc1–Arc5 widths, and Height_sut runs k = 3–6.",
+    "L10 (10) is the ventral split point, where the short half separates, not a seventh suture. So there are only Arc1–Arc5 widths.",
     "The curves are numbered differently: L.vdist = 25–26 (2 points), L.dorsal = 27–36, L.window = 37–40.",
     "One extra measure (Figure 7): Sut6_to_split = L09 (9)–L10 (10), the last suture to the split point.",
 ]:
