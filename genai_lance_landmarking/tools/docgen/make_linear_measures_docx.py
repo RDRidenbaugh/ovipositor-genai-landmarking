@@ -142,7 +142,8 @@ def lateral_figures(view):
     f = base(img, P)
     ring = blade_ring(q(f"{s}18"), q(f"{s}11"), ventral_chain, dorsal_chain)
     f.poly(np.vstack([ring, ring[:1]]), C[1], "Distal_blade_area", label_at=0.55, label_dy=-50)
-    f.line(q(f"{s}18"), ring[0], (120, 120, 120), "cut line R18-R11", dashed=True, label_t=1.0, label_dx=-120, label_dy=10)
+    f.line(q(f"{s}18"), ring[0], C[2], "Cut_line_height", width=5, label_t=1.0, label_dx=-110, label_dy=10)
+    f.text(ring[0], "foot", (60, 60, 60), size=18, dx=10 if right else -50, dy=-34)
     f.line(q(f"{s}04"), q(f"{s}18"), C[3], "Blade_height_sut1", label_t=0.2, label_dx=-250 if right else 14, label_dy=-10)
     f.line(q(f"{s}11"), q(f"{s}18"), C[0], "Height_window_start", label_dx=-260)
     if not right:
@@ -292,11 +293,21 @@ table(H, [
     ["Dorsal_arck_width (k = 1–6)", "R(10+k)–R(11+k)", "Spacing of the dorsal suture ends along the window (R11–R12 … R16–R17)."],
 ])
 doc.add_heading("Height of the distal blade", level=2)
-picture(FIGDIR / "lance_right_fig4_area.jpg", "Figure 5. Right view: the distal blade (outlined), bounded by the cut line through R18 and R11, the ventral margin and the dorsal curve.")
+para("The cut line", bold=True)
+para("Cut_line_height, Distal_blade_area and Mean_height use a line across the blade at the start of the window, defined in four steps:")
+for t_ in [
+    "Lance axis: the line from R02 (heel-ventral junction) to R01 (apex).",
+    "Dorsal end, R18: the line through R11 (the window's proximal end) perpendicular to the axis, followed dorsally to the first point where it reaches the lance's own dorsal edge (not the basal flap above it). R18 is constructed this way on the training labels; the CNN predicts it directly, so in the output the R18–R11 line is within 1.0° (median) of perpendicular, and within 3–4° in 95% of specimens.",
+    "Ventral end, the foot: the line from R18 through R11, continued ventrally past R11 to its first crossing of the ventral margin (R02 → 23–24 → R04 … R10 → 25–28 → R01). The foot is a constructed point, not a landmark.",
+    "Where it falls: on the Right the foot lies between R04–R05 or R05–R06 (about half each), on the Left between L05–L06 (99%), roughly 130–150 µm distal of suture 1 along the axis. It always falls between two suture-end anchors, never between semilandmarks, and the margin is nearly straight there, so its position is effectively interpolated between homologous points. R11 sits about a third of the way down the line.",
+]:
+    doc.add_paragraph(t_, style="List Number")
+picture(FIGDIR / "lance_right_fig4_area.jpg", "Figure 5. Right view: the cut line (R18 → foot, through R11) and the distal blade (outlined), bounded by the cut line, the ventral margin and the dorsal curve.")
 table(H, [
     ["Height_window_start", "R11 (11)–R18 (18)", "Window's proximal end to the dorsal edge (perpendicular to the axis by construction of R18)."],
-    ["Blade_height_sut1", "R04 (4)–R18 (18)", "Suture 1's ventral end to the start of the dorsal curve, a straight line between two protocol points. R04 lies proximal to the cut line, so the line is oblique to the lance axis (not a perpendicular height)."],
-    ["Distal_blade_area", "R18, 29–38, R01, ventral margin back to the cut line", "Area (mm²) of the blade distal to the cut line R18 → R11, which is perpendicular to the lance axis and is continued to the ventral margin. Bounded by the dorsal curve, the ventral margin (R04–R10, 25–28) and the cut line."],
+    ["Cut_line_height", "R18 (18) → foot, through R11", "Length of the cut line: the full blade height at the start of the window, perpendicular to the lance axis (within ~1°). Median 243 µm (Right), 236 µm (Left)."],
+    ["Blade_height_sut1", "R04 (4)–R18 (18)", "Suture 1's ventral end to the start of the dorsal curve, a straight line between two protocol points. R04 lies proximal to the cut line's foot, so the line is oblique to the lance axis; Cut_line_height is the perpendicular equivalent."],
+    ["Distal_blade_area", "R18, 29–38, R01, ventral margin back to the cut line", "Area (mm²) of the blade distal to the cut line, bounded by the cut line (R18 → foot), the ventral margin from the foot to R01, and the dorsal curve."],
     ["Mean_height", "Distal_blade_area / (R18 → R01 along the axis)", "Mean height of the distal blade, including the tapering tip: its area divided by its length measured along the lance axis. It replaces the v1.4 point heights (Height_sutk, Band_height_sutk), which correlated 0.96–0.99 with it."],
 ])
 
