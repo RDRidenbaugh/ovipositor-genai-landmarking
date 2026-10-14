@@ -306,7 +306,7 @@ For each view: a separate generalized Procrustes analysis with sliding semilandm
 
 | Trait family | Traits | Source |
 |---|---|---|
-| Size | Centroid size per view; blade length (arc length R02 → R01 along the ventral margin, and R18 → R01 along the dorsal margin; same on Left); heel height (R02 to the dorsal outline, perpendicular to the R02 → R01 axis) | Anchors + curves, mm via per-image calibration |
+| Size | Centroid size per view; blade length (arc length R02 → R01 along the ventral margin, and R18 → R01 along the dorsal margin; same on Left) | Anchors + curves, mm via per-image calibration |
 | Shape | Procrustes shape PCs per view; **heel module** vs **blade module** shapes (R02, R03 + heel curve vs the rest), and on Bottom the **shaft module** (B06, B10–B13 + B.side curves) vs the **tip module** (B01–B05, B07–B09 + tip curves), with modularity tests (Adams 2016 CR coefficient) | Full configuration |
 | Shaft / shoulders (Bottom) | Shoulder span (B12–B13); shoulder position along the axis (B11 → B12/B13 vs B12/B13 → apices); whole-structure dorsal length (B11 to each apex, along the axis); shaft taper; left–right shoulder asymmetry | Bottom, shaft module |
 | Tip / cutting geometry | Long–short apex offset along the axis (B01 vs B02, the length asymmetry between halves); fork depth (B14 to the apex midpoint); inner angle (B01–B14–B02) | Bottom |

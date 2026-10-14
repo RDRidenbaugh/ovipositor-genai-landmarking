@@ -144,9 +144,6 @@ def lateral_figures(view):
     f.poly(np.vstack([ring, ring[:1]]), C[1], "Distal_blade_area", label_at=0.55, label_dy=-50)
     f.line(q(f"{s}18"), ring[0], (120, 120, 120), "cut line R18-R11", dashed=True, label_t=1.0, label_dx=-120, label_dy=10)
     f.line(q(f"{s}11"), q(f"{s}18"), C[0], "Height_window_start", label_dx=-260)
-    # Distal_axis_length drawn parallel to the axis through the middle of the cut line
-    a0 = (q(f"{s}18") + ring[0]) / 2
-    f.line(a0, a0 + ((q(f"{s}01") - q(f"{s}18")) @ u) * u, C[2], "Distal_axis_length", label_t=0.5, label_dy=14)
     if not right:
         f.line(P[9 - 1], P[10 - 1], C[7], "Sut6_to_split", label_dy=24)
     f.save(FIGDIR / f"lance_{tag}_fig4_area.jpg")
@@ -298,8 +295,7 @@ picture(FIGDIR / "lance_right_fig4_area.jpg", "Figure 5. Right view: the distal 
 table(H, [
     ["Height_window_start", "R11 (11)–R18 (18)", "Window's proximal end to the dorsal edge (perpendicular to the axis by construction of R18)."],
     ["Distal_blade_area", "R18, 29–38, R01, ventral margin back to the cut line", "Area (mm²) of the blade distal to the cut line R18 → R11, which is perpendicular to the lance axis and is continued to the ventral margin. Bounded by the dorsal curve, the ventral margin (R04–R10, 25–28) and the cut line."],
-    ["Distal_axis_length", "R18 → R01, along the axis", "Length of the distal blade measured along the lance axis."],
-    ["Mean_height", "Distal_blade_area / Distal_axis_length", "Mean height of the distal blade, including the tapering tip. It replaces the v1.4 point heights (Height_sutk, Band_height_sutk), which correlated 0.96–0.99 with it."],
+    ["Mean_height", "Distal_blade_area / (R18 → R01 along the axis)", "Mean height of the distal blade, including the tapering tip: its area divided by its length measured along the lance axis. It replaces the v1.4 point heights (Height_sutk, Band_height_sutk), which correlated 0.96–0.99 with it."],
 ])
 
 # ----- Left
