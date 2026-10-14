@@ -99,5 +99,5 @@ Flagged images get an overlay in `output/overlays/<View>/`. To review them in Fi
   ```
 - **`landmark_key_v14.csv`:** maps each column number to its protocol point (e.g. Right 18 = R18, the dorsal curve start). The linear measures in `lance_v14_morphometrics.R` use these numbers.
 - **`PRIME_Lance<View>_Pheno_v14.csv`:** `ID, species, session, centroid_size_<view>, Comp1–Comp20`, then the linear measures of protocol §6.2 in mm and degrees. It joins to the QTL tables by `ID`, like `PRIME_Lance<View>_Pheno_v3.csv`.
-  - **Lateral views:** window length, suture lengths and angles, ventral and dorsal suture spacing, scallop amplitude, face length, blade chord, heel length, ventral and dorsal arc lengths, heights to the dorsal edge, and band height ("cutting depth").
-  - **Bottom:** half lengths, fork depth, inner and tip-divergence angles, along-axis lengths, apex offset, shoulder span, position and asymmetry, widths at sutures 1–4, shaft taper, and tip and side arc lengths.
+  - **Lateral views:** window length, suture lengths and angles, ventral and dorsal suture spacing, face length, blade chord, heel length, ventral and dorsal arc lengths, window-start height (R11–R18), and the distal blade's area, axis length and mean height (area / axis length). Semilandmarks enter only as curve paths or area boundaries, never as single points.
+  - **Bottom:** half lengths, fork depth, inner angle, along-axis lengths, apex offset, shoulder span, position and asymmetry, widths at sutures 1–4, shaft taper, and tip and side arc lengths.

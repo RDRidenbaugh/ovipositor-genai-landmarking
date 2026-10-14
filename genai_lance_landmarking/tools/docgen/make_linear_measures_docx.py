@@ -3,8 +3,8 @@ measures computed by production/lance_v14_morphometrics.R (lateral_measures, bot
 figures drawn on a real specimen.
 
 Every figure is drawn from the CNN's v1.4 prediction for the example lance, using the same point numbers
-and the same geometry as the R script (lance axis R02 -> R01, heights measured perpendicular to that axis
-up to the dorsal curve, Bottom axis B11 -> apex midpoint), so the figures show exactly what the numbers
+and the same geometry as the R script (lance axis R02 -> R01, distal blade bounded by the cut line R18 -> R11,
+Bottom axis B11 -> apex midpoint), so the figures show exactly what the numbers
 measure. Rerun after any change to the R script's measures rather than hand-editing the .docx.
 
 usage (from repo root, project venv):
@@ -54,25 +54,21 @@ def unit(a, b):
     return u / np.linalg.norm(u)
 
 
-def height_to(p, u, chain):
-    """From point p along the normal to axis u, the nearest crossing of the polyline `chain` (R height_to)."""
-    n = np.array([-u[1], u[0]]); best = None
-    for q0, q1 in zip(chain[:-1], chain[1:]):
+def blade_ring(o, w, ventral, dorsal_chain):
+    """Outline of the distal blade (R distal_blade_area): the cut line from o (R18) through w (R11) meets the
+    ventral chain at its foot; ring = foot -> ventral margin -> apex -> dorsal curve back to R18."""
+    d = w - o; best = None
+    for k, (q0, q1) in enumerate(zip(ventral[:-1], ventral[1:])):
         e = q1 - q0
-        den = n[0] * e[1] - n[1] * e[0]
+        den = d[0] * e[1] - d[1] * e[0]
         if abs(den) < 1e-12:
             continue
-        s = ((q0 - p)[0] * e[1] - (q0 - p)[1] * e[0]) / den
-        t = ((q0 - p)[0] * n[1] - (q0 - p)[1] * n[0]) / den
-        if 0 <= t <= 1 and (best is None or abs(s) < abs(best)):
-            best = s
-    return None if best is None else p + best * n
-
-
-def foot(p, a, b):
-    """Foot of the perpendicular from p on the line a-b."""
-    u = unit(a, b)
-    return a + ((p - a) @ u) * u
+        s = ((q0 - o)[0] * e[1] - (q0 - o)[1] * e[0]) / den
+        t = ((q0 - o)[0] * d[1] - (q0 - o)[1] * d[0]) / den
+        if s > 1 and 0 <= t <= 1 and (best is None or s < best[0]):
+            best = (s, k)
+    s, k = best
+    return np.vstack([o + s * d, ventral[k + 1:], dorsal_chain[:-1][::-1]])
 
 
 def base(img, P, width=1800, pad=110, crop=None):
@@ -105,9 +101,9 @@ def lateral_figures(view):
     right = view == "Right"
     vdist = list(range(25, 29)) if right else [25, 26]
     dorsal = list(range(29, 39)) if right else list(range(27, 37))
-    window = list(range(39, 43)) if right else list(range(37, 41))
     ch = lambda nums: P[[n - 1 for n in nums]]  # noqa: E731
     dorsal_chain = ch([18] + dorsal + [1])
+    ventral_chain = ch([2, 23, 24, 4, 5, 6, 7, 8, 9, 10] + vdist + [1])
     u = unit(q(f"{s}02"), q(f"{s}01"))
     tag = view.lower()
     key_figure(view, P, img, FIGDIR / f"lance_{tag}_fig1_key.jpg")
@@ -118,21 +114,17 @@ def lateral_figures(view):
     f.line(q(f"{s}02"), q(f"{s}01"), C[1], "Blade_chord", dashed=True, label_t=0.45, label_dy=18)
     f.line(q(f"{s}03"), q(f"{s}02"), C[2], "Heel_length", label_dx=-150)
     f.poly(ch([3, 19, 20, 21, 22, 2]), C[3], "Heel_arc_length", label_at=0.8, label_dx=-60, label_dy=40)
-    f.poly(ch([2, 23, 24, 4, 5, 6, 7, 8, 9, 10] + vdist + [1]), C[4], "Ventral_arc_length", label_at=0.55, label_dy=20)
+    f.poly(ventral_chain, C[4], "Ventral_arc_length", label_at=0.55, label_dy=20)
     f.poly(dorsal_chain, C[5], "Dorsal_arc_length", label_at=0.3, label_dy=-36)
     f.line(q(f"{s}10"), q(f"{s}01"), C[6], "Tip_length", label_dy=20)
     f.line(q(f"{s}17"), q(f"{s}01"), C[7], "Window_to_apex", label_t=0.4, label_dy=-34)
     f.save(FIGDIR / f"lance_{tag}_fig2_lengths.jpg")
 
-    # window: length, dorsal suture-end spacing, scallops
+    # window: length, dorsal suture-end spacing
     f = base(img, P)
     f.line(q(f"{s}11"), q(f"{s}17"), C[0], "Cutwindow_length", label_t=0.6, label_dy=-44)
     for k in range(1, 7):
         f.line(P[10 + k - 1], P[11 + k - 1], C[3], "Dorsal_arc1_width" if k == 1 else None, label_dx=-280, label_dy=-10, width=3)
-    for k in range(1, 5):
-        a, b, m = P[11 + k - 1], P[12 + k - 1], P[window[k - 1] - 1]
-        fo = foot(m, a, b)
-        f.line(m, fo, C[4], "Scallop1_amp" if k == 1 else None, width=5, label_dx=-60, label_dy=40)
     f.save(FIGDIR / f"lance_{tag}_fig3a_window.jpg")
 
     # sutures: lengths, ventral spacing, angle (drawn for suture 4)
@@ -146,24 +138,18 @@ def lateral_figures(view):
     f.angle(v, v + u * 160, top, C[5], "Sut4_angle", radius=60)
     f.save(FIGDIR / f"lance_{tag}_fig3b_sutures.jpg")
 
-    # heights
+    # distal blade: area, its length along the axis, mean height
     f = base(img, P)
-    f.poly(dorsal_chain, (150, 150, 150), width=2)
-    f.line(q(f"{s}11"), q(f"{s}18"), C[0], "Height_window_start", label_dx=-240)
-    for k in range(3, 8 if right else 7):
-        a = P[3 + k - 1]; h = height_to(a, u, dorsal_chain)
-        if h is not None:
-            f.line(a, h, C[1], f"Height_sut{k}" if k == 3 else None, label_t=0.5, label_dx=-160)
+    ring = blade_ring(q(f"{s}18"), q(f"{s}11"), ventral_chain, dorsal_chain)
+    f.poly(np.vstack([ring, ring[:1]]), C[1], "Distal_blade_area", label_at=0.55, label_dy=-50)
+    f.line(q(f"{s}18"), ring[0], (120, 120, 120), "cut line R18-R11", dashed=True, label_t=1.0, label_dx=-120, label_dy=10)
+    f.line(q(f"{s}11"), q(f"{s}18"), C[0], "Height_window_start", label_dx=-260)
+    # Distal_axis_length drawn parallel to the axis through the middle of the cut line
+    a0 = (q(f"{s}18") + ring[0]) / 2
+    f.line(a0, a0 + ((q(f"{s}01") - q(f"{s}18")) @ u) * u, C[2], "Distal_axis_length", label_t=0.5, label_dy=14)
     if not right:
-        a = P[10 - 1]; h = height_to(a, u, dorsal_chain)
-        if h is not None:
-            f.line(a, h, C[6], "Height_split", label_t=0.5, label_dx=10)
         f.line(P[9 - 1], P[10 - 1], C[7], "Sut6_to_split", label_dy=24)
-    for k in range(2, 7):
-        a = P[10 + k - 1]; h = height_to(a, u, dorsal_chain)
-        if h is not None:
-            f.line(a, h, C[2], f"Band_height_sut{k}" if k == 2 else None, width=5, label_dx=10)
-    f.save(FIGDIR / f"lance_{tag}_fig4_heights.jpg")
+    f.save(FIGDIR / f"lance_{tag}_fig4_area.jpg")
     return ppm
 
 
@@ -181,8 +167,6 @@ def bottom_figures():
     f.line(b(14), b(2), C[1], "Short_half_length", label_t=0.6, label_dy=22)
     f.line(b(1), b(2), C[2], "Apex_separation", label_t=0.5, label_dx=16, label_dy=-12)
     f.line(b(14), mid, C[3], "Fork_depth", dashed=True, label_t=0.0, label_dx=-200, label_dy=-12)
-    f.angle(b(14), b(15), b(18), C[5], None, radius=90)
-    f.text(b(14), "Tip_divergence_angle", C[5], dx=-120, dy=70)
     f.angle(b(14), b(1), b(2), C[4], "Inner_angle", radius=220)
     f.save(FIGDIR / "lance_bottom_fig2_fork.jpg")
 
@@ -277,7 +261,8 @@ for t_ in [
     "Units: millimetres, from each image's own scale bar. Angles are in degrees.",
     "Column names carry the view as a suffix: _right, _left, _bot (e.g. Face_length_right).",
     "Point numbers follow landmark_key_v14.csv and are given in brackets, e.g. R04 (4). The Left view uses the same numbers for L01–L18. Its curve numbers differ (see the Left section).",
-    "Lance axis for the lateral views: heel-ventral junction → apex (R02 → R01). Heights are measured perpendicular to this axis, from a point up to where that perpendicular meets the dorsal curve (R18 → dorsal semilandmarks → R01).",
+    "Lance axis for the lateral views: heel-ventral junction → apex (R02 → R01).",
+    "Semilandmarks are used only as curve geometry: as the path of a curve length, or as the boundary of an area. They are never an endpoint of a distance or an angle, because their position along the curve carries no homology (it follows from equal spacing and sliding).",
     "Distances are straight lines unless the definition says 'along' a curve (sum of the segments through the curve's points).",
     f"Figures: CNN landmarks of the N. pinetum parent {EXAMPLE}, drawn exactly as the script computes the measures.",
 ]:
@@ -299,7 +284,7 @@ table(H, [
     ["Window_to_apex", "R17 (17)–R01 (1)", "Distal end of the cuticular window to apex."],
 ])
 doc.add_heading("Window and sutures", level=2)
-picture(FIGDIR / "lance_right_fig3a_window.jpg", "Figure 3. Right view: the cuticular window: length, spacing of the dorsal suture ends, and scallop amplitudes.")
+picture(FIGDIR / "lance_right_fig3a_window.jpg", "Figure 3. Right view: the cuticular window: length and spacing of the dorsal suture ends.")
 picture(FIGDIR / "lance_right_fig3b_sutures.jpg", "Figure 4. Right view: suture lengths, spacing of the ventral suture ends, and the suture angle (drawn for suture 4).")
 table(H, [
     ["Cutwindow_length", "R11 (11)–R17 (17)", "Window, proximal to distal end."],
@@ -307,14 +292,14 @@ table(H, [
     ["Sutk_angle (k = 1–6)", "R(3+k)→R(10+k) vs R02→R01", "Inclination of suture k to the lance axis, 0–90°."],
     ["Arck_width (k = 1–6)", "R(3+k)–R(4+k)", "Spacing of ventral suture ends k and k+1 (R04–R05 … R09–R10)."],
     ["Dorsal_arck_width (k = 1–6)", "R(10+k)–R(11+k)", "Spacing of the dorsal suture ends along the window (R11–R12 … R16–R17)."],
-    ["Scallopk_amp (k = 1–4)", "window point 38+k vs chord R(11+k)–R(12+k)", "Height of the k-th window scallop crest above the straight line between its two suture ends."],
 ])
-doc.add_heading("Heights", level=2)
-picture(FIGDIR / "lance_right_fig4_heights.jpg", "Figure 5. Right view: heights, measured perpendicular to the lance axis up to the dorsal curve (grey).")
+doc.add_heading("Height of the distal blade", level=2)
+picture(FIGDIR / "lance_right_fig4_area.jpg", "Figure 5. Right view: the distal blade (outlined), bounded by the cut line through R18 and R11, the ventral margin and the dorsal curve.")
 table(H, [
     ["Height_window_start", "R11 (11)–R18 (18)", "Window's proximal end to the dorsal edge (perpendicular to the axis by construction of R18)."],
-    ["Height_sutk (k = 3–7)", "R(3+k) → dorsal curve", "Lance height at ventral suture end k. Sutures 1–2 lie proximal to R18, so they have no height."],
-    ["Band_height_sutk (k = 2–6)", "R(10+k) → dorsal curve", "Dorsal suture end (window margin) to the dorsal edge: the 'cutting depth' band above the window."],
+    ["Distal_blade_area", "R18, 29–38, R01, ventral margin back to the cut line", "Area (mm²) of the blade distal to the cut line R18 → R11, which is perpendicular to the lance axis and is continued to the ventral margin. Bounded by the dorsal curve, the ventral margin (R04–R10, 25–28) and the cut line."],
+    ["Distal_axis_length", "R18 → R01, along the axis", "Length of the distal blade measured along the lance axis."],
+    ["Mean_height", "Distal_blade_area / Distal_axis_length", "Mean height of the distal blade, including the tapering tip. It replaces the v1.4 point heights (Height_sutk, Band_height_sutk), which correlated 0.96–0.99 with it."],
 ])
 
 # ----- Left
@@ -323,25 +308,24 @@ picture(FIGDIR / "lance_left_fig1_key.jpg", "Figure 6. Left view: the 40 points.
 para("Every Right-view measure is also computed for the Left view with the same definition, suffix _left, and L in place of R. The differences follow from the Left view's points:")
 for t_ in [
     "L10 (10) is the ventral split point, where the short half separates, not a seventh suture. So there are only Arc1–Arc5 widths, and Height_sut runs k = 3–6.",
-    "The curves are numbered differently: L.vdist = 25–26 (2 points), L.dorsal = 27–36, L.window = 37–40 (Scallopk_amp uses window point 36+k).",
-    "Two extra measures (Figure 7): Sut6_to_split = L09 (9)–L10 (10), the last suture to the split point; and Height_split = L10 → dorsal curve, the lance height at the split point.",
+    "The curves are numbered differently: L.vdist = 25–26 (2 points), L.dorsal = 27–36, L.window = 37–40.",
+    "One extra measure (Figure 7): Sut6_to_split = L09 (9)–L10 (10), the last suture to the split point.",
 ]:
     doc.add_paragraph(t_, style="List Bullet")
-picture(FIGDIR / "lance_left_fig4_heights.jpg", "Figure 7. Left view: heights, including the Left-only Height_split and Sut6_to_split.")
+picture(FIGDIR / "lance_left_fig4_area.jpg", "Figure 7. Left view: the distal blade and the Left-only Sut6_to_split.")
 
 # ----- Bottom
 doc.add_heading("Bottom view (both halves)", level=1)
 picture(FIGDIR / "lance_bottom_fig1_key.jpg", "Figure 8. Bottom view: the 38 points (B14 fork crotch computed).")
 HB = ["Measure (column)", "Points", "Definition"]
 doc.add_heading("Tips and fork", level=2)
-picture(FIGDIR / "lance_bottom_fig2_fork.jpg", "Figure 9. Bottom view: half lengths, apex separation, fork depth and angles.")
+picture(FIGDIR / "lance_bottom_fig2_fork.jpg", "Figure 9. Bottom view: half lengths, apex separation, fork depth and the inner angle.")
 table(HB, [
     ["Long_half_length", "B14 (14)–B01 (1)", "Fork crotch to the long-half apex."],
     ["Short_half_length", "B14 (14)–B02 (2)", "Fork crotch to the short-half apex."],
     ["Apex_separation", "B01 (1)–B02 (2)", "Distance between the two apices."],
     ["Fork_depth", "B14 → midpoint of B01, B02", "Fork crotch to the midpoint between the apices."],
     ["Inner_angle", "B01–B14–B02", "Angle at the fork crotch between the two apices."],
-    ["Tip_divergence_angle", "15–B14–18", "Angle at the crotch between the first medial semilandmark of each tip (how the tips diverge just past the fork)."],
 ])
 doc.add_heading("Positions along the lance axis", level=2)
 picture(FIGDIR / "lance_bottom_fig3_axis.jpg", "Figure 10. Bottom view: the lance axis (B11 → apex midpoint), positions along it and distances from it.")
@@ -368,7 +352,7 @@ doc.add_heading("Notes", level=1)
 for t_ in [
     "Shape is analysed separately, by Procrustes superimposition of all points with the semilandmarks sliding. The linear measures are for univariate and QTL models.",
     "Every length scales with lance size. Use centroid_size_<view> (in the same table) as a covariate for size-corrected comparisons.",
-    "A height is NA when the perpendicular from its point does not meet the dorsal curve (rare, e.g. in very bent specimens).",
+    "Removed after v1.4 review (2026-10-14): Height_sutk, Band_height_sutk and Height_split (point-to-curve heights whose dorsal end depends on the axis direction; replaced by Mean_height), Scallopk_amp (the window semilandmarks are not at the scallop crests; they sit 45–70% along each scallop's chord), and Tip_divergence_angle (its arms ended at single semilandmarks).",
 ]:
     doc.add_paragraph(t_, style="List Bullet")
 para(f"Generated by genai_lance_landmarking/tools/docgen/make_linear_measures_docx.py. Example scale (Right): {ppm_r:.1f} px/mm.", italic=True, size=9)

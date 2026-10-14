@@ -132,7 +132,7 @@ Orientation and side naming follow the old imaging protocol: **Right** = right-f
 | R.vbase | R02 → R04 along the ventral margin | 2 | (unsampled) |
 | R.vdist | R10 → R01 along the ventral margin | 4 | 11, 12 |
 | R.dorsal | R18 → R01 along the dorsal outline | 10 | 26–28, 30–36 |
-| R.window | R11 → R12 → … → R16 → R17 along the window's dorsal margin; one semilandmark between each pair of suture ends (the scallop crests) | 4 | 16, 18, 20, 22 |
+| R.window | R11 → R12 → … → R16 → R17 along the window's dorsal margin; one semilandmark between each pair of suture ends (on each scallop, but spaced by arc length, not placed at the crest) | 4 | 16, 18, 20, 22 |
 
 **Changed in v1.4: where the dorsal curve starts.** In v1.3 the curve started on the line through R04 (suture 1), next to the heel. There the golden basal flap often lies over the dorsal margin, and because the curve's ten semilandmarks are spaced from its start, a start point placed on the flap drags the whole curve off the edge. Moving the start to the line through R11 drops the 17–20% of the curve next to the heel. In a retraining comparison on identical images it gave the best repeatability of the new versions (Right shape repeatability 0.64 vs 0.56 for the suture-1 start and 0.59 for the old protocol) and no dorsal-curve failures on never-seen Left specimens with flaps (0 of 46, against 4 of 46 before the label fix).
 
@@ -309,9 +309,10 @@ For each view: a separate generalized Procrustes analysis with sliding semilandm
 | Size | Centroid size per view; blade length (arc length R02 → R01 along the ventral margin, and R18 → R01 along the dorsal margin; same on Left); heel height (R02 to the dorsal outline, perpendicular to the R02 → R01 axis) | Anchors + curves, mm via per-image calibration |
 | Shape | Procrustes shape PCs per view; **heel module** vs **blade module** shapes (R02, R03 + heel curve vs the rest), and on Bottom the **shaft module** (B06, B10–B13 + B.side curves) vs the **tip module** (B01–B05, B07–B09 + tip curves), with modularity tests (Adams 2016 CR coefficient) | Full configuration |
 | Shaft / shoulders (Bottom) | Shoulder span (B12–B13); shoulder position along the axis (B11 → B12/B13 vs B12/B13 → apices); whole-structure dorsal length (B11 to each apex, along the axis); shaft taper; left–right shoulder asymmetry | Bottom, shaft module |
-| Tip / cutting geometry | Long–short apex offset along the axis (B01 vs B02, the length asymmetry between halves); fork depth (B14 to the apex midpoint); tip divergence angle (between B.medL and B.medS at B14) | Bottom |
+| Tip / cutting geometry | Long–short apex offset along the axis (B01 vs B02, the length asymmetry between halves); fork depth (B14 to the apex midpoint); inner angle (B01–B14–B02) | Bottom |
 | Segmentation (meristic) | Suture count per half; suture spacing profile (inter-suture distance / blade length); suture inclination (angle from ventral end to dorsal end) | Suture detector + anchors |
-| Window | Window height and area; scallop amplitude (crest height above the suture-end chord) | Window curve |
+| Window | Window length; dorsal suture-end spacing. Scallop amplitude is not measured: the window semilandmarks are not at the crests | Window anchors |
+| Blade height | Distal blade area (R18 → apex, bounded by the dorsal curve, the ventral margin and the cut line R18–R11) and mean height = area / length along the axis; window-start height R11–R18 | Curves as boundaries + anchors |
 
 Recommended handling:
 - Map size and shape separately. Also map shape with log centroid size as a covariate (allometry-corrected), because a size QTL will otherwise show up as a shape QTL.
