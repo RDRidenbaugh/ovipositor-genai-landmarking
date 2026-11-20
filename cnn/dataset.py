@@ -43,9 +43,13 @@ def letterbox(img: np.ndarray, size: int):
 
 
 class LanceLandmarkDataset(Dataset):
-    def __init__(self, samples: list[Sample], input_size: int = INPUT_SIZE, cache: bool = False):
+    def __init__(self, samples: list[Sample], input_size: int = INPUT_SIZE, cache: bool = False,
+                 color_aug: bool = False):
         self.samples = samples
         self.input_size = input_size
+        # opt-in (training only): random per-channel gain and offset on the canvas, so the
+        # network sees the brighter/duller backgrounds of the CW images. Off by default.
+        self.color_aug = color_aug
         # opt-in: keep each letterboxed uint8 canvas after first decode. Decoding
         # the LZW TIFFs is ~2/3 of per-sample time and there is no augmentation,
         # so later epochs are identical. (Per DataLoader worker process.)
@@ -69,7 +73,13 @@ class LanceLandmarkDataset(Dataset):
 
         heatmaps, valid = make_heatmaps(pts_heatmap, HEATMAP_SIZE, HEATMAP_SIGMA)
 
-        image = canvas.astype(np.float32) / 255.0
+        image = canvas.astype(np.float32)
+        if self.color_aug:
+            rng = np.random.default_rng()
+            gain = rng.uniform(0.8, 1.2, size=3).astype(np.float32)
+            offset = rng.uniform(-25.0, 25.0, size=3).astype(np.float32)
+            image = np.clip(image * gain + offset, 0.0, 255.0)
+        image = image / 255.0
         image = (image - IMAGENET_MEAN) / IMAGENET_STD
         image = np.transpose(image, (2, 0, 1))  # C,H,W
 

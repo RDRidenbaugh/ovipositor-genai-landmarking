@@ -65,9 +65,11 @@ export MKL_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 
 # The production models must all exist (runs/v14/<view>_f<k>/best.pt); a missing
 # model would leave its held-out images predicted in-sample (flagged in_sample).
+# RUNS: which model set to use (default runs/v14; e.g. RUNS=runs/v14_coloraug)
+RUNS="${RUNS:-runs/v14}"
 missing=0
 for v in right left bottom; do for k in 0 1 2 3 4; do
-  [[ -f runs/v14/${v}_f${k}/best.pt ]] || { echo "missing runs/v14/${v}_f${k}/best.pt" >&2; missing=1; }
+  [[ -f $RUNS/${v}_f${k}/best.pt ]] || { echo "missing $RUNS/${v}_f${k}/best.pt" >&2; missing=1; }
 done; done
 (( missing )) && exit 1
 
@@ -80,7 +82,7 @@ EXTRA_ARGS=()
 
 echo "host=$(hostname)  cpus=$SLURM_CPUS_PER_TASK  images=$IMAGES  out=$OUT"
 # shellcheck disable=SC2086  # IMAGES is deliberately word-split
-"$PYTHON" "$PROD/landmark_images.py" $IMAGES --out-dir "$OUT" --workers 4 \
+"$PYTHON" "$PROD/landmark_images.py" $IMAGES --out-dir "$OUT" --runs "$RUNS" --workers 4 \
     ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}
 "$PYTHON" "$PROD/export_geomorph.py" --pred-dir "$OUT"
 echo "Done -> $OUT/geomorph (copy it back and run lance_v14_morphometrics.R)"

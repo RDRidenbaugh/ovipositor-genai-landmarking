@@ -126,6 +126,7 @@ def main():
                     help="mse: Gaussian heatmap regression (can stall at an all-zeros solution); dsnt: soft-argmax coordinate loss")
     ap.add_argument("--dsnt-lambda", type=float, default=1.0, help="weight of the JS-divergence regularizer in --loss dsnt")
     ap.add_argument("--cache-images", action="store_true", help="keep decoded/letterboxed images in RAM after first read")
+    ap.add_argument("--color-aug", action="store_true", help="training only: random per-channel gain/offset (brightness domain shift)")
     ap.add_argument("--fg-weight", type=float, default=0.0,
                     help="foreground upweighting k in loss weight (1 + k*target); 0 = plain MSE")
     ap.add_argument("--lr-decay", choices=["none", "cosine"], default="none",
@@ -160,7 +161,7 @@ def main():
             indent=2,
         )
 
-    train_ds = LanceLandmarkDataset(train_s, cache=args.cache_images)
+    train_ds = LanceLandmarkDataset(train_s, cache=args.cache_images, color_aug=args.color_aug)
     val_ds = LanceLandmarkDataset(val_s, cache=args.cache_images)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
